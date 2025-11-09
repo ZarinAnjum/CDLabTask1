@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1762674258 source:c:\users\student\desktop\lt4\zarin\main.cpp
+	<iostream>
+	<string>
+	<fstream>
+	<sstream>
+	<vector>
+
