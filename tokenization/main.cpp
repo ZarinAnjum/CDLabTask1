@@ -1,42 +1,87 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
+#include <cctype>
 using namespace std;
 
-vector<string> generateLineTokens(const string& fileName) {
-    vector<string> tokens;
-    ifstream inputFile(fileName);
-
-    if (!inputFile.is_open()) {
-        cerr << "Error: Could not open file " << fileName << endl;
-        return tokens;
-    }
-
-    string line;
-    while (getline(inputFile, line)) {
-        tokens.push_back(line);
-    }
-
-    inputFile.close();
-    return tokens;
+bool isKeyword(string s) {
+    string keywords[] = {
+        "int","return","using","namespace","include"};
+    for (string k:keywords)
+        if (s==k) 
+        {return true;}
+    return false;
 }
 
 int main() {
-    string sourceFileName = "sam.txt";
-    vector<string> lineTokens = generateLineTokens(sourceFileName);
+    ifstream file("sam.txt");
 
-    if (lineTokens.empty() && sourceFileName.find("Error:") == string::npos) {
-        cout << "The file was read, but no lines (tokens) were found." << endl;
+    if (!file) {
+        cout<<"Error opening file!"<<endl;
         return 0;
     }
 
-    cout << "--- Tokens (Source Code Lines) from " << sourceFileName << " ---" << endl;
-    for (size_t i = 0; i < lineTokens.size(); ++i) {
-        cout << "Line [" << i + 1 << "]: \"" << lineTokens[i] << "\"" << endl;
-    }
-    cout << "  " << endl;
-    cout << "Total lines/tokens generated: " << lineTokens.size() << endl;
+    string line;
+    int lineNo = 1;
 
+    while (getline(file,line)) {
+        cout<<"\nLine "<< lineNo++<<" Tokens:\n";
+
+        for (int i=0;i<line.length();i++) {
+
+            if (isspace(line[i]))
+                continue;
+
+            if (line[i] == '#') {
+                cout<<"Preprocessor Directive: #include\n";
+                break;
+            }
+
+            if (isalpha(line[i]) || line[i] == '_') {
+                string word="";
+                while (i<line.length() && (isalnum(line[i]) || line[i] == '_')) {
+                    word += line[i++];
+                }
+                i--;
+
+                if (isKeyword(word))
+                    {cout<<"Keyword: "<<word<<endl;}
+                else
+                    {cout<<"Identifier: "<<word<<endl;}
+            }
+
+            else if (isdigit(line[i])) {
+                string num="";
+                while (i<line.length() && isdigit(line[i])) {
+                    num+= line[i++];
+                }
+                i--;
+                cout<<"Constant: "<<num<<endl;
+            }
+
+            else if (line[i] == '"') {
+                string str="\"";
+                i++;
+                while (i<line.length() && line[i] != '"') {
+                    str += line[i++];
+                }
+                str+= "\"";
+                cout<<"String Literal: "<<str<<endl;
+            }
+
+            else if (line[i]=='=' || line[i]=='+' ||
+                     line[i]=='<' || line[i]=='>') {
+                cout<<"Operator: "<<line[i]<<endl;
+            }
+
+            else if (line[i]=='(' || line[i]==')' ||
+                     line[i]=='{' || line[i]=='}' ||
+                     line[i]==';') {
+                cout <<"Punctuation: "<<line[i]<<endl;
+            }
+        }
+    }
+
+    file.close();
     return 0;
 }
